@@ -7,64 +7,76 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Building2, Plus, Edit, Eye, MapPin, DollarSign, FileText } from "lucide-react";
-
-interface Condominio {
-  id: string;
-  nome: string;
-  endereco: string;
-  valorMensal: number;
-  recebeNotaFiscal: boolean;
-  contratoUrl?: string;
-  status: 'ativo' | 'inativo';
-}
+import { Building2, Plus, Edit, Eye, MapPin, DollarSign, FileText, Loader2 } from "lucide-react";
+import { useCondominios, type Condominio } from "@/hooks/useCondominios";
 
 export function Condominios() {
-  const [condominios, setCondominios] = useState<Condominio[]>([
-    {
-      id: '1',
-      nome: 'Residencial Primavera',
-      endereco: 'Rua das Palmeiras, 100 - Jardim Primavera',
-      valorMensal: 2500.00,
-      recebeNotaFiscal: true,
-      contratoUrl: 'contrato-primavera.pdf',
-      status: 'ativo'
-    },
-    {
-      id: '2',
-      nome: 'Edifício Central Plaza',
-      endereco: 'Av. Paulista, 1500 - Centro',
-      valorMensal: 4200.00,
-      recebeNotaFiscal: false,
-      status: 'ativo'
-    },
-    {
-      id: '3',
-      nome: 'Condomínio Vila Rica',
-      endereco: 'Rua dos Lírios, 250 - Vila Rica',
-      valorMensal: 1800.00,
-      recebeNotaFiscal: true,
-      contratoUrl: 'contrato-vila-rica.pdf',
-      status: 'ativo'
-    }
-  ]);
-
+  const { condominios, loading, createCondominio, updateCondominio } = useCondominios();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCondominio, setEditingCondominio] = useState<Condominio | null>(null);
+  const [formData, setFormData] = useState({
+    nome: '',
+    endereco: '',
+    valor_servico: '',
+    recebe_nota_fiscal: false,
+  });
 
   const handleEdit = (condominio: Condominio) => {
     setEditingCondominio(condominio);
+    setFormData({
+      nome: condominio.nome,
+      endereco: condominio.endereco,
+      valor_servico: condominio.valor_servico?.toString() || '',
+      recebe_nota_fiscal: condominio.recebe_nota_fiscal || false,
+    });
     setIsDialogOpen(true);
   };
 
   const handleAddNew = () => {
     setEditingCondominio(null);
+    setFormData({
+      nome: '',
+      endereco: '',
+      valor_servico: '',
+      recebe_nota_fiscal: false,
+    });
     setIsDialogOpen(true);
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const condominioData = {
+      nome: formData.nome,
+      endereco: formData.endereco,
+      valor_servico: formData.valor_servico ? parseFloat(formData.valor_servico) : null,
+      recebe_nota_fiscal: formData.recebe_nota_fiscal,
+      contrato_digital: null,
+    };
+
+    try {
+      if (editingCondominio) {
+        await updateCondominio(editingCondominio.id, condominioData);
+      } else {
+        await createCondominio(condominioData);
+      }
+      setIsDialogOpen(false);
+    } catch (error) {
+      // Error is handled in the hook
+    }
+  };
+
   const totalValorMensal = condominios
-    .filter(c => c.status === 'ativo')
-    .reduce((sum, c) => sum + c.valorMensal, 0);
+    .filter(c => c.valor_servico)
+    .reduce((sum, c) => sum + (c.valor_servico || 0), 0);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -90,36 +102,57 @@ export function Condominios() {
                 {editingCondominio ? 'Editar Condomínio' : 'Novo Condomínio'}
               </DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="nome">Nome do Condomínio</Label>
-                <Input id="nome" placeholder="Digite o nome do condomínio" />
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="nome">Nome do Condomínio</Label>
+                  <Input 
+                    id="nome" 
+                    value={formData.nome}
+                    onChange={(e) => setFormData({...formData, nome: e.target.value})}
+                    placeholder="Digite o nome do condomínio" 
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="endereco">Endereço Completo</Label>
+                  <Input 
+                    id="endereco" 
+                    value={formData.endereco}
+                    onChange={(e) => setFormData({...formData, endereco: e.target.value})}
+                    placeholder="Rua, número - Bairro - CEP" 
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="valor">Valor Mensal (R$)</Label>
+                  <Input 
+                    id="valor" 
+                    type="number" 
+                    step="0.01" 
+                    value={formData.valor_servico}
+                    onChange={(e) => setFormData({...formData, valor_servico: e.target.value})}
+                    placeholder="2500.00" 
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch 
+                    id="nota-fiscal" 
+                    checked={formData.recebe_nota_fiscal}
+                    onCheckedChange={(checked) => setFormData({...formData, recebe_nota_fiscal: checked})}
+                  />
+                  <Label htmlFor="nota-fiscal">Recebe Nota Fiscal</Label>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="endereco">Endereço Completo</Label>
-                <Input id="endereco" placeholder="Rua, número - Bairro - CEP" />
+              <div className="flex justify-end gap-2 pt-4">
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" className="bg-primary hover:bg-primary/90">
+                  {editingCondominio ? 'Salvar Alterações' : 'Cadastrar Condomínio'}
+                </Button>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="valor">Valor Mensal (R$)</Label>
-                <Input id="valor" type="number" step="0.01" placeholder="2500.00" />
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch id="nota-fiscal" />
-                <Label htmlFor="nota-fiscal">Recebe Nota Fiscal</Label>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="contrato">Upload do Contrato</Label>
-                <Input id="contrato" type="file" accept=".pdf,.doc,.docx" />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Cancelar
-              </Button>
-              <Button className="bg-primary hover:bg-primary/90">
-                {editingCondominio ? 'Salvar Alterações' : 'Cadastrar Condomínio'}
-              </Button>
-            </div>
+            </form>
           </DialogContent>
         </Dialog>
       </div>
@@ -137,7 +170,7 @@ export function Condominios() {
             <div className="text-right">
               <p className="text-sm text-muted-foreground">Condomínios Ativos</p>
               <p className="text-2xl font-bold text-primary">
-                {condominios.filter(c => c.status === 'ativo').length}
+                {condominios.length}
               </p>
             </div>
           </div>
@@ -152,10 +185,10 @@ export function Condominios() {
                 <div>
                   <CardTitle className="text-lg text-foreground">{condominio.nome}</CardTitle>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge variant={condominio.status === 'ativo' ? 'default' : 'secondary'} className="bg-secondary text-secondary-foreground">
-                      {condominio.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                    <Badge variant="default" className="bg-secondary text-secondary-foreground">
+                      Ativo
                     </Badge>
-                    {condominio.recebeNotaFiscal && (
+                    {condominio.recebe_nota_fiscal && (
                       <Badge variant="outline" className="text-xs">
                         Nota Fiscal
                       </Badge>
@@ -175,15 +208,17 @@ export function Condominios() {
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2 text-sm">
-                  <DollarSign className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Valor Mensal:</span>
-                  <span className="font-bold text-secondary">
-                    R$ {condominio.valorMensal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </span>
-                </div>
+                {condominio.valor_servico && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <DollarSign className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Valor Mensal:</span>
+                    <span className="font-bold text-secondary">
+                      R$ {condominio.valor_servico.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                )}
 
-                {condominio.contratoUrl && (
+                {condominio.contrato_digital && (
                   <div className="flex items-center gap-2 text-sm">
                     <FileText className="w-4 h-4 text-muted-foreground" />
                     <span className="text-muted-foreground">Contrato:</span>

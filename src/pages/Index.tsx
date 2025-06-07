@@ -1,15 +1,32 @@
 
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { Login } from "@/components/Login";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Dashboard } from "@/components/Dashboard";
 import { Funcionarias } from "@/components/Funcionarias";
 import { Condominios } from "@/components/Condominios";
 import { Card, CardContent } from "@/components/ui/card";
-import { Building2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Building2, LogOut } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 const Index = () => {
+  const { user, loading, signOut } = useAuth();
   const [activeSection, setActiveSection] = useState('dashboard');
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Login />;
+  }
 
   const renderContent = () => {
     switch (activeSection) {
@@ -37,8 +54,16 @@ const Index = () => {
       <div className="min-h-screen flex w-full bg-white">
         <AppSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
         <main className="flex-1 overflow-hidden">
-          <div className="p-6 bg-white border-b border-border">
-            <SidebarTrigger className="mb-4" />
+          <div className="p-6 bg-white border-b border-border flex items-center justify-between">
+            <SidebarTrigger />
+            <Button 
+              variant="outline" 
+              onClick={signOut}
+              className="flex items-center gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              Sair
+            </Button>
           </div>
           <div className="p-6 overflow-y-auto h-[calc(100vh-100px)]">
             {renderContent()}

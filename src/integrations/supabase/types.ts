@@ -9,7 +9,211 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      condominios: {
+        Row: {
+          contrato_digital: string | null
+          endereco: string
+          id: string
+          nome: string
+          recebe_nota_fiscal: boolean | null
+          valor_servico: number | null
+        }
+        Insert: {
+          contrato_digital?: string | null
+          endereco: string
+          id?: string
+          nome: string
+          recebe_nota_fiscal?: boolean | null
+          valor_servico?: number | null
+        }
+        Update: {
+          contrato_digital?: string | null
+          endereco?: string
+          id?: string
+          nome?: string
+          recebe_nota_fiscal?: boolean | null
+          valor_servico?: number | null
+        }
+        Relationships: []
+      }
+      escalas: {
+        Row: {
+          data: string
+          horas_trabalho: number
+          id: string
+          id_condominio: string | null
+          id_funcionaria: string | null
+        }
+        Insert: {
+          data: string
+          horas_trabalho: number
+          id?: string
+          id_condominio?: string | null
+          id_funcionaria?: string | null
+        }
+        Update: {
+          data?: string
+          horas_trabalho?: number
+          id?: string
+          id_condominio?: string | null
+          id_funcionaria?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escalas_id_condominio_fkey"
+            columns: ["id_condominio"]
+            isOneToOne: false
+            referencedRelation: "condominios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escalas_id_funcionaria_fkey"
+            columns: ["id_funcionaria"]
+            isOneToOne: false
+            referencedRelation: "funcionarias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      faltas: {
+        Row: {
+          anexo: string | null
+          data: string
+          desconto_aplicado: boolean | null
+          id: string
+          id_funcionaria: string | null
+          justificativa: boolean | null
+          motivo: string | null
+        }
+        Insert: {
+          anexo?: string | null
+          data: string
+          desconto_aplicado?: boolean | null
+          id?: string
+          id_funcionaria?: string | null
+          justificativa?: boolean | null
+          motivo?: string | null
+        }
+        Update: {
+          anexo?: string | null
+          data?: string
+          desconto_aplicado?: boolean | null
+          id?: string
+          id_funcionaria?: string | null
+          justificativa?: boolean | null
+          motivo?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "faltas_id_funcionaria_fkey"
+            columns: ["id_funcionaria"]
+            isOneToOne: false
+            referencedRelation: "funcionarias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      funcionarias: {
+        Row: {
+          cpf: string
+          dias_da_semana: string[] | null
+          documentos: Json | null
+          endereco: string | null
+          horas_semanais: number | null
+          id: string
+          jornada_dias: number | null
+          nome: string
+          salario_base: number | null
+          telefone: string | null
+          valor_passagem: number | null
+        }
+        Insert: {
+          cpf: string
+          dias_da_semana?: string[] | null
+          documentos?: Json | null
+          endereco?: string | null
+          horas_semanais?: number | null
+          id?: string
+          jornada_dias?: number | null
+          nome: string
+          salario_base?: number | null
+          telefone?: string | null
+          valor_passagem?: number | null
+        }
+        Update: {
+          cpf?: string
+          dias_da_semana?: string[] | null
+          documentos?: Json | null
+          endereco?: string | null
+          horas_semanais?: number | null
+          id?: string
+          jornada_dias?: number | null
+          nome?: string
+          salario_base?: number | null
+          telefone?: string | null
+          valor_passagem?: number | null
+        }
+        Relationships: []
+      }
+      salarios: {
+        Row: {
+          id: string
+          id_funcionaria: string | null
+          mes: string
+          salario_base: number | null
+          salario_final: number | null
+          total_descontos: number | null
+          total_passagens: number | null
+        }
+        Insert: {
+          id?: string
+          id_funcionaria?: string | null
+          mes: string
+          salario_base?: number | null
+          salario_final?: number | null
+          total_descontos?: number | null
+          total_passagens?: number | null
+        }
+        Update: {
+          id?: string
+          id_funcionaria?: string | null
+          mes?: string
+          salario_base?: number | null
+          salario_final?: number | null
+          total_descontos?: number | null
+          total_passagens?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salarios_id_funcionaria_fkey"
+            columns: ["id_funcionaria"]
+            isOneToOne: false
+            referencedRelation: "funcionarias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      usuarios: {
+        Row: {
+          email: string
+          id: string
+          role: string | null
+          senha_hash: string | null
+        }
+        Insert: {
+          email: string
+          id?: string
+          role?: string | null
+          senha_hash?: string | null
+        }
+        Update: {
+          email?: string
+          id?: string
+          role?: string | null
+          senha_hash?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
