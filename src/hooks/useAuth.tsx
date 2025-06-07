@@ -1,7 +1,10 @@
-
 import { useState, useEffect, createContext, useContext } from 'react';
-import { User } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { User, createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  'https://dilgvrclnyvfbboaqhye.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpbGd2cmNsbnl2ZmJvYXFoeWV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg5ODk4MjYsImV4cCI6MjA2NDU2NTgyNn0.ygiRY5QeQXMd5hfGpUXnyQyFoQwmWS6VcotvSDGLuVc'
+);
 
 interface AuthContextType {
   user: User | null;
@@ -17,15 +20,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (_, session) => {
         setUser(session?.user ?? null);
         setLoading(false);
       }
@@ -35,25 +36,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    // Validação hardcoded para o email e senha específicos
-    if (email !== 'conservadorar3@hotmail.com' || password !== 'kauan123') {
-      throw new Error('Email ou senha inválidos. Acesso restrito ao administrador.');
-    }
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    await supabase.auth.signOut();
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
+    <AuthContext.Provider value={ user, loading, signIn, signOut }>
       {children}
     </AuthContext.Provider>
   );
@@ -61,8 +54,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth deve ser usado dentro do AuthProvider');
   return context;
 }
