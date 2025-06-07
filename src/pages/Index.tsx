@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Login } from "@/components/Login";
@@ -7,6 +6,10 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Dashboard } from "@/components/Dashboard";
 import { Funcionarias } from "@/components/Funcionarias";
 import { Condominios } from "@/components/Condominios";
+import { Escalas } from "@/components/Escalas";
+import { Faltas } from "@/components/Faltas";
+import { Relatorios } from "@/components/Relatorios";
+import { Documentos } from "@/components/Documentos";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Building2, LogOut } from "lucide-react";
@@ -37,13 +40,13 @@ const Index = () => {
       case 'condominios':
         return <Condominios />;
       case 'escalas':
-        return <ComingSoon title="Escalas de Trabalho" />;
+        return <Escalas />;
       case 'faltas':
-        return <ComingSoon title="Registro de Faltas" />;
+        return <Faltas />;
       case 'relatorios':
-        return <ComingSoon title="Relatórios" />;
+        return <Relatorios />;
       case 'documentos':
-        return <ComingSoon title="Gestão de Documentos" />;
+        return <Documentos />;
       default:
         return <Dashboard />;
     }

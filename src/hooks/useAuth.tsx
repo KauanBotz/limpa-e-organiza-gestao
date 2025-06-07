@@ -35,6 +35,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    // Validação hardcoded para o email e senha específicos
+    if (email !== 'conservadorar3@hotmail.com' || password !== 'kauan123') {
+      throw new Error('Email ou senha inválidos. Acesso restrito ao administrador.');
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
