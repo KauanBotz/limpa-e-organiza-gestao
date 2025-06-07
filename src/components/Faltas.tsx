@@ -325,7 +325,7 @@ export function Faltas() {
             </TableBody>
           </Table>
         </CardContent>
-      </div>
+      </Card>
     </div>
   );
 }
